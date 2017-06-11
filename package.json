@@ -1,0 +1,17 @@
+{
+  "name": "xcapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "xcapp.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "N Guest",
+  "license": "ISC",
+  "dependencies": {
+    "browser-sync": "^2.18.12",
+    "gulp": "^3.9.1",
+    "gulp-notify": "^3.0.0",
+    "gulp-sass": "^3.1.0"
+  }
+}

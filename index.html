@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>XCapp</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link type="text/css" rel="stylesheet" href="css/styles.css"/>
+    <style>
+
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="info">
+      Total:<span id="total-distance">0</span><small>km</small>
+    </div>
+    <script>
+
+      var poly;
+      var map;
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 13,
+          center: {lat: 38.298871, lng: -122.274397},  // Center the map on Napa, USA.
+          mapTypeId: 'terrain'
+        });
+
+        poly = new google.maps.Polyline({
+          strokeColor: '#000000',
+          strokeOpacity: 1.0,
+          strokeWeight: 3,
+          draggable: true,
+          editable: true
+        });
+        poly.setMap(map);
+
+        // Listeners for the click / dblclick
+        map.addListener('click', addLatLng);
+        poly.addListener('dblclick', removeLatLng);
+
+        // Add listener on drag polygon.
+        poly.getPath().addListener('set_at', editLatLng);
+      //poly.addListener('dragend', editLatLng);
+
+      }
+
+      // Handles click events on a map, and adds a new point to the Polyline.
+      function addLatLng(event) {
+        var path = poly.getPath();
+
+        // Because path is an MVCArray, we can simply append a new coordinate
+        // and it will automatically appear.
+        path.push(event.latLng);
+
+        getPathArray(path);
+      }
+
+      function removeLatLng(event) {
+        var path = poly.getPath();
+
+        //path.splice(event.vertex,1)
+
+        path.removeAt(event.vertex)
+        getPathArray(path);
+
+      }
+
+      function editLatLng(event) {
+        var path = poly.getPath();
+        getPathArray(path);
+
+      }
+
+      function getPathArray(path) {
+        var arr = path.getArray()
+        var pointsCount = path.length;
+        console.log('pointsCount: '+pointsCount)
+        var pointsArray = []
+        for (var i=0; i< path.length; i++) {
+          pointsArray.push(arr[i].lat(), arr[i].lng())
+        }
+        console.log(pointsArray)
+        getLengthArray(path)
+      }
+
+      function getLengthArray(path) {
+        var arr = path.getArray();
+        var distArr = []
+        for (var i=0; i < path.length - 1; i++) {
+          var point1 = [],
+              point2 = [];
+          point1.push(arr[i].lng(),arr[i].lat())
+          point2.push(arr[i+1].lng(),arr[i+1].lat())
+
+          var dist = distanceBetweenTwoPoints(point1, point2)
+          distArr.push(dist)
+        }
+        var distanceBox = document.getElementById('total-distance');
+        if (distArr.length > 0) {
+          var totalDist = distArr.reduce(function(total,sum){
+            return (total + sum);
+          })
+          distanceBox.innerHTML = (totalDist/1000).toFixed(1)
+        } else {
+          distanceBox.innerHTML = 0;
+        }
+      }
+      //Haversine formula (assume spherical earth)
+      function distanceBetweenTwoPoints(point1, point2) {
+        let lon1 = point1[0], lat1 = point1[1],
+            lon2 = point2[0], lat2 = point2[1]
+        let R = 6371e3; // earth radius in metres
+        let φ1 = toRadians(lat1);
+        let φ2 = toRadians(lat2);
+        let Δφ = toRadians(lat2-lat1);
+        let Δλ = toRadians(lon2-lon1);
+
+        let a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return  R * c;
+      }
+      function toRadians(x) {
+        return x * Math.PI / 180;
+      }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDjhXcpJNQKzXTkkNbCOSB7N0qhYkoSlWg&callback=initMap"></script>
+  </body>
+</html>
